@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 echo "build image started"
 
-az acr login --name $ACR_NAME
+TOKEN=$(az acr login --name $ACR_NAME  --expose-token --output tsv --query accessToken)
 
 az acr build --resource-group $RESOURCE_GROUP --registry $ACR_NAME --image $ACR_NAME.azurecr.io/helloacrtasks:v1 .
 
