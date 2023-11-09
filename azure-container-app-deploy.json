@@ -112,7 +112,8 @@
   },
   "variables": {
     "const_ownerRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
-    "const_scriptLocation": "scripts/build-container-registry-image.sh",
+    "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/scripts/",
+    "const_scriptLocation": "build-container-registry-image.sh",
     "const_checkingBuilderStateDeploymentName": "checking-build-service-builder-state",
     "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
     "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]"
@@ -169,7 +170,7 @@
       ],
       "properties": {
         "azCliVersion": "2.9.1",
-        "scriptContent": "[concat('az acr login --name ', parameters('containerRegistryName'), ' --expose-token','\n', 'az acr build --registry ', parameters('containerRegistryName'), ' --image ', parameters('containerRegistryName'), '.azurecr.io/helloacrtasks:v1', ' .')]",
+        "primaryScriptUri": "[uri(variables('const_scriptUrl'), variables('const_scriptLocation'))]",
         "environmentVariables": [
           {
             "name": "ACR_NAME",
