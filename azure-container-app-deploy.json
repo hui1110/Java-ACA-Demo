@@ -104,7 +104,7 @@
     },
     "userAssignedManagedIdentityName": {
         "type": "string",
-        "defaultValue": "[format('mi{0}', resourceGroup().name)]",
+        "defaultValue": "[format('mi-{0}', resourceGroup().name)]",
         "metadata": {
             "description": "Specifies the name of the user assigned managed identity."
         }
@@ -175,6 +175,10 @@
           {
             "name": "ACR_NAME",
             "value": "[parameters('containerRegistryName')]"
+          },
+          {
+            "name": "RESOURCE_GROUP",
+            "value": "[resourceGroup().name]"
           }
         ],
         "cleanupPreference": "OnSuccess",
