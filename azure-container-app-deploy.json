@@ -114,7 +114,7 @@
     "const_ownerRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
     "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/scripts/",
     "const_scriptLocation": "build-container-registry-image.sh",
-    "const_checkingBuilderStateDeploymentName": "checking-build-service-builder-state",
+    "const_buildImage": "checking-build-image",
     "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
     "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]"
   },
@@ -156,9 +156,9 @@
     {
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2020-10-01",
-      "name": "[variables('const_checkingBuilderStateDeploymentName')]",
+      "name": "[variables('const_buildImage')]",
       "location": "[parameters('location')]",
-      "kind": "AzureCLI",
+      "kind": "AzurePowerShell",
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
@@ -169,7 +169,7 @@
         "[resourceId('Microsoft.Authorization/roleAssignments', variables('name_roleAssignmentName'))]"
       ],
       "properties": {
-        "azCliVersion": "2.9.1",
+        "azPowerShellVersion": "9.7",
         "primaryScriptUri": "[uri(variables('const_scriptUrl'), variables('const_scriptLocation'))]",
         "environmentVariables": [
           {

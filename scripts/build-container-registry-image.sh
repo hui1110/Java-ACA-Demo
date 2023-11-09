@@ -1,8 +1,12 @@
 #!/bin/bash
 
+set -Eeuo pipefail
+
 echo "build image started"
 
 acrLoginToken=$(az acr login --name $ACR_NAME --expose-token)
+
+echo "acrLoginToken: $acrLoginToken"
 
 docker login $ACR_NAME -u 00000000-0000-0000-0000-000000000000 -p $acrLoginToken
 
