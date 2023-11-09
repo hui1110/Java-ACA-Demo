@@ -2,25 +2,32 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "containerAppName": {
+    "containerRegistryName": {
       "type": "string",
-      "defaultValue": "[format('app-{0}', uniqueString(resourceGroup().id))]",
+      "defaultValue": "[format('reg{0}', resourceGroup().name)]",
       "metadata": {
-        "description": "Specifies the name of the container app."
-      }
-    },
-    "containerAppEnvName": {
-      "type": "string",
-      "defaultValue": "[format('env-{0}', uniqueString(resourceGroup().id))]",
-      "metadata": {
-        "description": "Specifies the name of the container app environment."
+        "description": "Specifies the name of the container registry."
       }
     },
     "containerAppLogAnalyticsName": {
       "type": "string",
-      "defaultValue": "[format('log-{0}', uniqueString(resourceGroup().id))]",
+      "defaultValue": "[format('log-{0}', resourceGroup().name)]",
       "metadata": {
         "description": "Specifies the name of the log analytics workspace."
+      }
+    },
+    "containerAppEnvName": {
+      "type": "string",
+      "defaultValue": "[format('env-{0}', resourceGroup().name)]",
+      "metadata": {
+        "description": "Specifies the name of the container app environment."
+      }
+    },
+    "containerAppName": {
+      "type": "string",
+      "defaultValue": "[format('app-{0}', resourceGroup().name)]",
+      "metadata": {
+        "description": "Specifies the name of the container app."
       }
     },
     "location": {
@@ -32,7 +39,7 @@
     },
     "containerImage": {
       "type": "string",
-      "defaultValue": "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest",
+      "defaultValue": "[concat('mcr.microsoft.com/', concat(parameters('containerRegistryName'), '.azurecr.io/helloacrtasks:v1'))]",
       "metadata": {
         "description": "Specifies the docker container image to deploy."
       }
@@ -94,14 +101,46 @@
       "metadata": {
         "description": "Maximum number of replicas that will be deployed"
       }
+    },
+    "userAssignedManagedIdentityName": {
+        "type": "string",
+        "defaultValue": "[format('mi{0}', resourceGroup().name)]",
+        "metadata": {
+            "description": "Specifies the name of the user assigned managed identity."
+        }
     }
   },
   "variables": {
-
+    "const_ownerRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+    "const_scriptLocation": "scripts/build-container-registry-image.sh",
+    "const_checkingBuilderStateDeploymentName": "checking-build-service-builder-state",
+    "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
+    "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]"
   },
   "resources": [
     {
-      "name": "[format('reg{0}', uniqueString(resourceGroup().id))]",
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2023-01-31",
+      "name": "[parameters('userAssignedManagedIdentityName')]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[variables('name_roleAssignmentName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[variables('const_ownerRole')]",
+        "principalId": "[reference(variables('ref_identityId')).principalId]",
+        "principalType": "ServicePrincipal",
+        "scope": "[resourceGroup().id]"
+      }
+    },
+
+    {
+      "name": "[parameters('containerRegistryName')]",
       "type": "Microsoft.ContainerRegistry/registries",
       "apiVersion": "2019-05-01",
       "location": "[parameters('location')]",
@@ -112,6 +151,36 @@
         "adminUserEnabled": true
       }
     },
+
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "[variables('const_checkingBuilderStateDeploymentName')]",
+      "location": "[parameters('location')]",
+      "kind": "AzureCLI",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName')))]": {}
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('name_roleAssignmentName'))]"
+      ],
+      "properties": {
+        "azCliVersion": "2.9.1",
+        "scriptContent": "[concat('az acr login --name ', parameters('containerRegistryName'), ' --expose-token','\n', 'az acr build --registry ', parameters('containerRegistryName'), ' --image ', parameters('containerRegistryName'), '.azurecr.io/helloacrtasks:v1', ' .')]",
+        "environmentVariables": [
+          {
+            "name": "ACR_NAME",
+            "value": "[parameters('containerRegistryName')]"
+          }
+        ],
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D"
+      }
+    },
+
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2022-10-01",
