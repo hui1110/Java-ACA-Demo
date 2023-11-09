@@ -39,7 +39,7 @@
     },
     "containerImage": {
       "type": "string",
-      "defaultValue": "[concat('mcr.microsoft.com/', concat(parameters('containerRegistryName'), '.azurecr.io/helloacrtasks:v1'))]",
+      "defaultValue": "[concat('mcr.microsoft.com/', concat(parameters('containerRegistryName'), '.azurecr.io/',parameters('containerRegistryName') ,':v1'))]",
       "metadata": {
         "description": "Specifies the docker container image to deploy."
       }
@@ -141,8 +141,8 @@
     },
 
     {
-      "name": "[parameters('containerRegistryName')]",
       "type": "Microsoft.ContainerRegistry/registries",
+      "name": "[parameters('containerRegistryName')]",
       "apiVersion": "2019-05-01",
       "location": "[parameters('location')]",
       "sku": {
@@ -166,7 +166,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Authorization/roleAssignments', variables('name_roleAssignmentName'))]"
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('name_roleAssignmentName'))]",
+        "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
       ],
       "properties": {
         "AzCliVersion": "2.41.0",
@@ -267,7 +268,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]"
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
+        "[resourceId('Microsoft.Resources/deploymentScripts', variables('const_buildImage'))]"
       ]
     }
   ],
