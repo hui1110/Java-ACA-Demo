@@ -4,8 +4,8 @@ set -Eeuo pipefail
 
 echo "build image started"
 
-az acr login --name $ACR_NAME  --expose-token --output tsv --query accessToken
+az acr login --name $ACR_NAME  --expose-token
 
-az acr build --resource-group $RESOURCE_GROUP --registry $ACR_NAME https://github.com/hui1110/Java-ACA-Demo.git --image $ACR_NAME:v1 -f Windows.Dockerfile --platform windows
+az acr build -g $RESOURCE_GROUP -r $ACR_NAME . -t $ACR_NAME:v1
 
 echo "build image completed !"
