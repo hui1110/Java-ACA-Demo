@@ -170,7 +170,7 @@
         "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
       ],
       "properties": {
-        "roleDefinitionId": "[variables('arcPullRole')]",
+        "roleDefinitionId": "[variables('const_ownerRole')]",
         "principalId": "[reference(variables('ref_identityId')).principalId]"
       }
     },
