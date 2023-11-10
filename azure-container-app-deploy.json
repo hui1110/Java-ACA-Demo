@@ -115,9 +115,7 @@
     "arcPullRole": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
     "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/scripts/",
     "const_scriptBuildImage": "build-container-registry-image.sh",
-    "const_scriptAssginRole": "assgin-role-to-mi.sh",
     "const_buildImage": "build-image-to-container-registry",
-    "const_assginRole": "assign-role-to-managed-identity",
     "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
     "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]",
     "roleAssignmentName": "[concat(parameters('containerRegistryName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('arcPullRole')))]"
@@ -164,45 +162,16 @@
         "adminUserEnabled": true
       }
     },
-
     {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "[variables('const_assginRole')]",
-      "location": "[parameters('location')]",
-      "kind": "AzureCLI",
-      "identity": {
-        "type": "UserAssigned",
-        "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName')))]": {}
-        }
-      },
+      "type": "Microsoft.ContainerRegistry/registries/providers/roleAssignments",
+      "name": "[variables('roleAssignmentName')]",
+      "apiVersion": "2017-05-01",
       "dependsOn": [
         "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
       ],
       "properties": {
-        "AzCliVersion": "2.41.0",
-        "primaryScriptUri": "[uri(variables('const_scriptUrl'), variables('const_scriptAssginRole'))]",
-        "environmentVariables": [
-          {
-            "name": "ACR_NAME",
-            "value": "[parameters('containerRegistryName')]"
-          },
-          {
-            "name": "SUBSCRIPTION_ID",
-            "value": "[subscription().subscriptionId]"
-          },
-          {
-            "name": "RESOURCE_GROUP",
-            "value": "[resourceGroup().name]"
-          },
-          {
-            "name": "PID",
-            "value": "[reference(variables('ref_identityId')).principalId]"
-          }
-        ],
-        "cleanupPreference": "OnSuccess",
-        "retentionInterval": "P1D"
+        "roleDefinitionId": "[variables('arcPullRole')]",
+        "principalId": "[reference(variables('ref_identityId')).principalId]"
       }
     },
 
@@ -219,7 +188,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deploymentScripts', variables('const_assginRole'))]"
+        "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
       ],
       "properties": {
         "AzCliVersion": "2.41.0",
