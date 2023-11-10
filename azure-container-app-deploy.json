@@ -39,7 +39,7 @@
     },
     "containerImage": {
       "type": "string",
-      "defaultValue": "[concat('mcr.microsoft.com/', concat(parameters('containerRegistryName'), '.azurecr.io/',parameters('containerRegistryName') ,':v1'))]",
+      "defaultValue": "[concat(concat(parameters('containerRegistryName'), '.azurecr.io/',parameters('containerRegistryName') ,':v1'))]",
       "metadata": {
         "description": "Specifies the docker container image to deploy."
       }
@@ -103,20 +103,22 @@
       }
     },
     "userAssignedManagedIdentityName": {
-        "type": "string",
-        "defaultValue": "[format('mi-{0}', resourceGroup().name)]",
-        "metadata": {
-            "description": "Specifies the name of the user assigned managed identity."
-        }
+      "type": "string",
+      "defaultValue": "[format('mi-{0}', resourceGroup().name)]",
+      "metadata": {
+        "description": "Specifies the name of the user assigned managed identity."
+      }
     }
   },
   "variables": {
     "const_ownerRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+    "arcPullRole": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
     "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/scripts/",
     "const_scriptLocation": "build-container-registry-image.sh",
     "const_buildImage": "build-image-to-container-registry",
     "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
-    "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]"
+    "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]",
+    "roleAssignmentName": "[concat(parameters('containerRegistryName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('arcPullRole')))]"
   },
   "resources": [
     {
@@ -139,17 +141,37 @@
         "scope": "[resourceGroup().id]"
       }
     },
-
     {
       "type": "Microsoft.ContainerRegistry/registries",
       "name": "[parameters('containerRegistryName')]",
-      "apiVersion": "2019-05-01",
+      "apiVersion": "2019-12-01-preview",
       "location": "[parameters('location')]",
-      "sku": {
-        "name": "Basic"
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName')))]": {}
+        }
       },
+      "sku": {
+        "name": "Standard"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('name_roleAssignmentName'))]"
+      ],
       "properties": {
         "adminUserEnabled": true
+      }
+    },
+    {
+      "type": "Microsoft.ContainerRegistry/registries/providers/roleAssignments",
+      "name": "[variables('roleAssignmentName')]",
+      "apiVersion": "2017-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[variables('arcPullRole')]",
+        "principalId": "[reference(variables('ref_identityId')).principalId]"
       }
     },
 
@@ -166,7 +188,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Authorization/roleAssignments', variables('name_roleAssignmentName'))]",
         "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
       ],
       "properties": {
@@ -176,17 +197,12 @@
           {
             "name": "ACR_NAME",
             "value": "[parameters('containerRegistryName')]"
-          },
-          {
-            "name": "RESOURCE_GROUP",
-            "value": "[resourceGroup().name]"
           }
         ],
         "cleanupPreference": "OnSuccess",
         "retentionInterval": "P1D"
       }
     },
-
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2022-10-01",
@@ -196,7 +212,10 @@
         "sku": {
           "name": "PerGB2018"
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deploymentScripts', variables('const_buildImage'))]"
+      ]
     },
     {
       "type": "Microsoft.App/managedEnvironments",
@@ -224,6 +243,12 @@
       "apiVersion": "2022-06-01-preview",
       "name": "[parameters('containerAppName')]",
       "location": "[parameters('location')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName')))]": {}
+        }
+      },
       "properties": {
         "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
         "configuration": {
