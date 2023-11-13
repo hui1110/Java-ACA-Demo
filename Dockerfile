@@ -3,7 +3,6 @@ COPY . /app
 WORKDIR app
 RUN mvn clean install
 RUN ls -la
-COPY /app/target/Java-ACA-Demo-0.0.1-SNAPSHOT.jar app.jar
 
 FROM openjdk:8
 WORKDIR /app
