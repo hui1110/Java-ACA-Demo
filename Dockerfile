@@ -2,7 +2,8 @@ FROM maven:latest as builder
 COPY . /app
 WORKDIR app
 RUN mvn clean install
-COPY target/*.jar app.jar
+RUN ls -la
+COPY /target/*.jar app.jar
 
 FROM openjdk:8
 WORKDIR /app
