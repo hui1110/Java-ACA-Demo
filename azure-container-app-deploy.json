@@ -163,54 +163,6 @@
       }
     },
     {
-      "type": "Microsoft.KeyVault/vaults/",
-      "apiVersion": "2021-11-01-preview",
-      "name": "hui-kv-test1",
-      "location": "[parameters('location')]",
-      "properties": {
-        "accessPolicies": [],
-        "enableRbacAuthorization": true,
-        "enableSoftDelete": true,
-        "softDeleteRetentionInDays": "90",
-        "enabledForDeployment": false,
-        "enabledForDiskEncryption": false,
-        "enabledForTemplateDeployment": false,
-        "tenantId": "[subscription().tenantId]",
-        "sku": {
-          "name": "Standard",
-          "family": "A"
-        },
-        "networkAcls": {
-          "defaultAction": "Allow",
-          "bypass": "AzureServices"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat('hui-kv-test1', '/acrPassword')]",
-      "apiVersion": "2015-06-01",
-      "properties": {
-        "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2019-05-01').passwords[0].value]"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', 'hui-kv-test1')]"
-      ]
-    },
-
-    {
-      "type": "Microsoft.ContainerRegistry/registries/providers/roleAssignments",
-      "name": "[variables('roleAssignmentName')]",
-      "apiVersion": "2017-05-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName'))]"
-      ],
-      "properties": {
-        "roleDefinitionId": "[variables('const_ownerRole')]",
-        "principalId": "[reference(variables('ref_identityId')).principalId]"
-      }
-    },
-    {
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2020-10-01",
       "name": "[variables('const_buildImage')]",
@@ -361,8 +313,7 @@
         }
       ],
       "dependsOn": [
-        "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
-        "[resourceId('Microsoft.Resources/deploymentScripts', variables('const_buildImage'))]"
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]"
       ]
     }
   ],
