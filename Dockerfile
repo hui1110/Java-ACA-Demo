@@ -1,7 +1,7 @@
 FROM maven:3.8.1-openjdk-8
 COPY . /app
 WORKDIR app
-RUN mvn clean install
+RUN mvn clean package
 RUN ls -la
 RUN cd target
 RUN ls -la
