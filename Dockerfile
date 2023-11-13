@@ -4,6 +4,8 @@ COPY . /app
 WORKDIR app
 RUN ls -l
 RUN mvn clean install
+RUN ls -l
+RUN pwd
 
 FROM openjdk:8
 RUN pwd
