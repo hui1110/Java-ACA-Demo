@@ -5,6 +5,7 @@ RUN mvn clean install
 RUN ls -la
 
 FROM openjdk:8
+RUN ls -la
 WORKDIR /app
 RUN ls -la
 ARG JAR_FILE=target/*.jar
