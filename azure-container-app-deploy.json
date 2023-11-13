@@ -239,7 +239,7 @@
       "properties": {
         "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
         "configuration": {
-          "activeRevisionsMode": "Multiple",
+          "activeRevisionsMode": "Single",
           "registries": [
             {
               "server": "[concat(parameters('containerRegistryName'), '.azurecr.io')]",
@@ -266,7 +266,7 @@
           ]
         },
         "template": {
-          "revisionSuffix": "firstrevision",
+          "revisionSuffix": "revision",
           "containers": [
             {
               "name": "[parameters('containerAppName')]",
