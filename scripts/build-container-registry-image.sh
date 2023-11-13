@@ -8,7 +8,7 @@ az acr login --name $ACR_NAME  --expose-token
 
 #az acr build -r $ACR_NAME https://github.com/hui1110/Java-ACA-Demo.git -f Windows.Dockerfile --platform windows -t $ACR_NAME:v1
 
-az acr build --registry $ACR_NAME --image $ACR_NAME:v2 ../Java-ACA-Demo
+az acr build --registry $ACR_NAME --image $ACR_NAME:v2 https://github.com/hui1110/Java-ACA-Demo.git -f Windows.Dockerfile --platform windows
 
 
 echo "build image completed !"
