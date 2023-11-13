@@ -1,6 +1,6 @@
 FROM maven:latest as builder
-RUN pwd
-WORKDIR Java-ACA-Demo
+COPY ./Java-ACA-Demo /app
+WORKDIR app
 RUN ls -l
 RUN mvn clean install
 
