@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+rm -rf Java-ACA-Demo
+
 git clone https://github.com/hui1110/Java-ACA-Demo.git
 
 az acr login --name $ACR_NAME  --expose-token
