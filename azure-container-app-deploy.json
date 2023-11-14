@@ -262,20 +262,6 @@
             }
           ]
         },
-        "ingress": {
-          "external": true,
-          "clientCertificateMode": "Ignore",
-          "transport": "auto",
-          "targetPort": "[parameters('targetPort')]",
-          "allowInsecure": false,
-          "traffic": [
-            {
-              "revisionName": "[concat(parameters('containerAppName'), '-revision')]",
-              "latestRevision": true,
-              "weight": 100
-            }
-          ]
-        },
         "template": {
           "revisionSuffix": "revision",
           "containers": [
@@ -304,25 +290,6 @@
           }
         }
       },
-      "resources": [
-        {
-          "type": "revisions",
-          "apiVersion": "2022-03-01",
-          "name": "[parameters('containerRegistryName')]",
-          "properties": {
-            "settings": {
-              "imageSource": {
-                "registry": "[parameters('containerRegistryName')]",
-                "repository": "[parameters('containerRegistryName')]",
-                "tag": "v1"
-              }
-            }
-          },
-          "dependsOn": [
-            "[resourceId('Microsoft.App/containerApps', parameters('containerAppName'))]"
-          ]
-        }
-      ],
       "dependsOn": [
         "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]"
       ]
@@ -343,7 +310,7 @@
         "[resourceId('Microsoft.App/containerApps', parameters('containerAppName'))]"
       ],
       "properties": {
-        "AzCliVersion": "2.41.0",
+        "AzCliVersion": "2.47.0",
         "primaryScriptUri": "[uri(variables('const_scriptUrl'), variables('const_scriptEnableIngress'))]",
         "environmentVariables": [
           {
