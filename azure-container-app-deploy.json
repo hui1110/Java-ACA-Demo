@@ -46,7 +46,7 @@
     },
     "targetPort": {
       "type": "int",
-      "defaultValue": 80,
+      "defaultValue": 8080,
       "metadata": {
         "description": "Specifies the container port."
       }
@@ -112,13 +112,12 @@
   },
   "variables": {
     "const_ownerRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
-    "arcPullRole": "[concat('/subscriptions/',subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
     "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/scripts/",
     "const_scriptBuildImage": "build-container-registry-image.sh",
     "const_buildImage": "build-image-to-container-registry",
     "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
     "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]",
-    "roleAssignmentName": "[concat(parameters('containerRegistryName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('arcPullRole')))]"
+    "roleAssignmentName": "[concat(parameters('containerRegistryName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('const_ownerRole')))]"
   },
   "resources": [
     {
@@ -144,7 +143,7 @@
     {
       "type": "Microsoft.ContainerRegistry/registries",
       "name": "[parameters('containerRegistryName')]",
-      "apiVersion": "2019-12-01-preview",
+      "apiVersion": "2022-12-01",
       "location": "[parameters('location')]",
       "identity": {
         "type": "UserAssigned",
@@ -206,7 +205,7 @@
     },
     {
       "type": "Microsoft.App/managedEnvironments",
-      "apiVersion": "2022-06-01-preview",
+      "apiVersion": "2023-05-01",
       "name": "[parameters('containerAppEnvName')]",
       "location": "[parameters('location')]",
       "sku": {
@@ -227,7 +226,7 @@
     },
     {
       "type": "Microsoft.App/containerApps",
-      "apiVersion": "2022-03-01",
+      "apiVersion": "2022-10-01",
       "name": "[parameters('containerAppName')]",
       "location": "[parameters('location')]",
       "identity": {
@@ -236,6 +235,9 @@
           "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName')))]": {}
         }
       },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]"
+      ],
       "properties": {
         "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
         "configuration": {
@@ -256,6 +258,8 @@
         },
         "ingress": {
           "external": true,
+          "clientCertificateMode": "Ignore",
+          "transport": "auto",
           "targetPort": "[parameters('targetPort')]",
           "allowInsecure": false,
           "traffic": [
@@ -311,9 +315,6 @@
             "[resourceId('Microsoft.App/containerApps', parameters('containerAppName'))]"
           ]
         }
-      ],
-      "dependsOn": [
-        "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]"
       ]
     }
   ],
