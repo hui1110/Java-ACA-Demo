@@ -3,7 +3,7 @@ COPY src /app/src
 COPY pom.xml /app
 RUN mvn -f /app/pom.xml clean package -DskipTests
 
-FROM openjdk:8-alpine
+FROM openjdk:8
 COPY --from=maven-builder app/target/*.jar /app-service/app.jar
 WORKDIR /app-service
 EXPOSE 8080
