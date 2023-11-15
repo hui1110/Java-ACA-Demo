@@ -33,11 +33,12 @@ public class HelloController {
     @RequestMapping(value = "/attach", method = RequestMethod.GET)
     public String updateClassMethod(){
         try {
-            String agentFilePath = downloadAgentJar().getAbsolutePath();
             List<VirtualMachineDescriptor> list = VirtualMachine.list();
             for (VirtualMachineDescriptor vmd : list) {
+                System.out.println(vmd.id() + " : " + vmd.displayName());
                 if (vmd.displayName().equals(AGENT_ARGS)) {
                     System.out.println("find agent process");
+                    String agentFilePath = downloadAgentJar().getAbsolutePath();
                     VirtualMachine virtualMachine = VirtualMachine.attach(vmd.id());
                     virtualMachine.loadAgent(agentFilePath);
                     virtualMachine.detach();
