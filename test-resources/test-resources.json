@@ -112,18 +112,16 @@
     "containerRegistryPassword": {
       "type": "string",
       "defaultValue": "container-registry-password",
-        "metadata": {
-            "description": "Specifies the name of the secret."
-        }
+      "metadata": {
+        "description": "Specifies the name of the secret."
+      }
     }
   },
   "variables": {
     "const_ownerRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
-    "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/scripts/",
+    "const_scriptUrl": "https://raw.githubusercontent.com/hui1110/Java-ACA-Demo/main/test-resources/",
     "const_scriptBuildImage": "build-container-registry-image.sh",
     "const_buildImage": "build-image-to-container-registry",
-    "const_enableIngress": "enable-ingress-for-container-app",
-    "const_scriptEnableIngress": "enable-ingress-for-container-app.sh",
     "ref_identityId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName'))]",
     "name_roleAssignmentName": "[guid(format('{0}{1}Role assignment in group{0}', resourceGroup().name, variables('ref_identityId')))]",
     "roleAssignmentName": "[concat(parameters('containerRegistryName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('const_ownerRole')))]"
@@ -235,7 +233,7 @@
     },
     {
       "type": "Microsoft.App/containerApps",
-      "apiVersion": "2022-03-01",
+      "apiVersion": "2022-10-01",
       "name": "[parameters('containerAppName')]",
       "location": "[parameters('location')]",
       "identity": {
@@ -247,18 +245,30 @@
       "properties": {
         "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]",
         "configuration": {
+          "secrets": [
+            {
+              "name": "[parameters('containerRegistryPassword')]",
+              "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2022-12-01').passwords[1].value]"
+            }
+          ],
           "activeRevisionsMode": "Single",
+          "ingress": {
+            "external": true,
+            "targetPort": "[parameters('targetPort')]",
+            "allowInsecure": false,
+            "transport": "Auto",
+            "traffic": [
+              {
+                "latestRevision": true,
+                "weight": 100
+              }
+            ]
+          },
           "registries": [
             {
               "server": "[concat(parameters('containerRegistryName'), '.azurecr.io')]",
               "username": "[parameters('containerRegistryName')]",
               "PasswordSecretRef": "[parameters('containerRegistryPassword')]"
-            }
-          ],
-          "secrets": [
-            {
-              "name": "[parameters('containerRegistryPassword')]",
-              "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('containerRegistryName')), '2022-12-01').passwords[1].value]"
             }
           ]
         },
@@ -293,44 +303,12 @@
       "dependsOn": [
         "[resourceId('Microsoft.App/managedEnvironments', parameters('containerAppEnvName'))]"
       ]
-    },
-    {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "[variables('const_enableIngress')]",
-      "location": "[parameters('location')]",
-      "kind": "AzureCLI",
-      "identity": {
-        "type": "UserAssigned",
-        "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedManagedIdentityName')))]": {}
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.App/containerApps', parameters('containerAppName'))]"
-      ],
-      "properties": {
-        "AzCliVersion": "2.47.0",
-        "primaryScriptUri": "[uri(variables('const_scriptUrl'), variables('const_scriptEnableIngress'))]",
-        "environmentVariables": [
-          {
-            "name": "CONTAINER_APP_NAME",
-            "value": "[parameters('containerAppName')]"
-          },
-          {
-            "name": "RESOURCE_GROUP",
-            "value": "[resourceGroup().name]"
-          }
-        ],
-        "cleanupPreference": "OnSuccess",
-        "retentionInterval": "P1D"
-      }
     }
   ],
   "outputs": {
     "containerAppFQDN": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('containerAppName')), '2022-03-01').latestRevisionFqdn]"
+      "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('containerAppName')), '2022-10-01').latestRevisionFqdn]"
     }
   }
 }
