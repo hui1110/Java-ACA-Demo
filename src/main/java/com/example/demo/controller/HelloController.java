@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,16 +34,6 @@ public class HelloController {
     public String hello() {
         return "Hello World! Java 8";
     }
-
-    @RequestMapping("/config")
-    public Map<String, String> config(){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("yyyy-MM-dd'T'HH:mm:ss");
-        Date date = new Date();
-        Map<String, String> res = new HashMap<>();
-        res.put("lastModifiedDate", simpleDateFormat.format(date));
-        return res;
-     }
 
     @RequestMapping(value = "/attach", method = RequestMethod.GET)
     public String updateClassMethod(){
@@ -73,7 +64,7 @@ public class HelloController {
         HttpURLConnection connection = (HttpURLConnection) new URI(AGENT_PATH).toURL().openConnection();
         connection.connect();
         try (InputStream inputStream = connection.getInputStream();
-             OutputStream outputStream = new FileOutputStream(file)) {
+             OutputStream outputStream = Files.newOutputStream(file.toPath())) {
             IOUtils.copy(inputStream, outputStream);
         } finally {
             connection.disconnect();
