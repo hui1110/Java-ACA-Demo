@@ -6,5 +6,6 @@ RUN mvn -f /app/pom.xml clean package -DskipTests
 FROM openjdk:8
 COPY --from=maven-builder app/target/*.jar /app-service/app.jar
 WORKDIR /app-service
+RUN wget -O agent.jar https://huiagentaccount.blob.core.windows.net/agent-8/java-accelerator-agent-0.0.1-SNAPSHOT.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-javaagent:agent.jar", "-jar", "app.jar"]
