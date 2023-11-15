@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 public class HelloController {
 
-    String AGENT_ARGS = "/app.jar";
+    String AGENT_ARGS = "app.jar";
 
     String AGENT_PATH = "https://huiagentaccount.blob.core.windows.net/agent-8/java-accelerator-agent-0.0.1-SNAPSHOT.jar";
 

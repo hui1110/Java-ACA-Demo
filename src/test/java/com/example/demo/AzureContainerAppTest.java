@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Objects;
 
 public class AzureContainerAppTest {
-    private static final String FQDN = "app-armacatest--revision.jollydune-5317213d.eastus.azurecontainerapps.io";
+    private static final String FQDN = "";
 
     @Test
     void testCreatedContainerApp() {
