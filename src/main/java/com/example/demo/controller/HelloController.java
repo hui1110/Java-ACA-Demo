@@ -43,7 +43,7 @@ public class HelloController {
                 System.out.println(vmd.id() + " : " + vmd.displayName());
                 if (vmd.displayName().equals(AGENT_ARGS)) {
                     System.out.println("find agent process");
-                    String agentFilePath = "C:\\item\\ASA-Java-Agent\\target\\java-accelerator-agent-0.0.1-SNAPSHOT.jar";
+                    String agentFilePath = downloadAgentJar().getAbsolutePath();
                     VirtualMachine virtualMachine = VirtualMachine.attach(vmd.id());
                     virtualMachine.loadAgent(agentFilePath);
                     virtualMachine.detach();
