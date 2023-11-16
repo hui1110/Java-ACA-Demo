@@ -9,4 +9,4 @@ WORKDIR /app-service
 RUN wget -O agent.jar https://huiagentaccount.blob.core.windows.net/agent-8/java-accelerator-agent-0.0.1-SNAPSHOT.jar
 RUN wget -O javassist.jar https://repo1.maven.org/maven2/org/javassist/javassist/3.29.2-GA/javassist-3.29.2-GA.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-javaagent:agent.jar", "-jar", "app.jar"]
+ENTRYPOINT ["java","-Xbootclasspath/a:javassist-3.29.2-GA.jar","-javaagent:agent.jar", "-jar", "app.jar"]
