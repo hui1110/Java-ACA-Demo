@@ -25,9 +25,14 @@ public class HelloController {
 
     String AGENT_PATH = "https://huiagentaccount.blob.core.windows.net/agent-8/java-accelerator-agent-0.0.1-SNAPSHOT.jar";
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello World! Java 8";
+    @GetMapping("/premain")
+    public String premain() {
+        return "premain method";
+    }
+
+    @GetMapping("/agentmain")
+    public String agentmain() {
+        return "agentmain method";
     }
 
     @RequestMapping(value = "/attach", method = RequestMethod.GET)
@@ -38,7 +43,7 @@ public class HelloController {
                 System.out.println(vmd.id() + " : " + vmd.displayName());
                 if (vmd.displayName().equals(AGENT_ARGS)) {
                     System.out.println("find agent process");
-                    String agentFilePath = downloadAgentJar().getAbsolutePath();
+                    String agentFilePath = "C:\\item\\ASA-Java-Agent\\target\\java-accelerator-agent-0.0.1-SNAPSHOT.jar";
                     VirtualMachine virtualMachine = VirtualMachine.attach(vmd.id());
                     virtualMachine.loadAgent(agentFilePath);
                     virtualMachine.detach();
