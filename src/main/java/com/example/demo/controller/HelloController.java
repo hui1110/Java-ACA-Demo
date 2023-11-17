@@ -75,7 +75,7 @@ public class HelloController {
         connection.connect();
         try (InputStream inputStream = connection.getInputStream();
              OutputStream outputStream = Files.newOutputStream(file.toPath())) {
-            IOUtils.copy(inputStream, outputStream);
+             IOUtils.copy(inputStream, outputStream);
         } finally {
             connection.disconnect();
         }
