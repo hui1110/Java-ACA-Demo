@@ -36,12 +36,15 @@ public class HelloController {
     }
 
     @RequestMapping(value = "/attach", method = RequestMethod.GET)
-    public String updateClassMethod(){
+    public String updateClassMethod() throws ClassNotFoundException {
         ClassLoader classLoader = this.getClass().getClassLoader();
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
-        System.out.println(" Class Loader demo: " + classLoader);
+        System.out.println("Class Loader demo: " + classLoader);
         System.out.println("System Class Loader demo: " + systemClassLoader);
+
+        systemClassLoader.loadClass("com.example.demo.controller.HelloController");
+
         try {
             List<VirtualMachineDescriptor> list = VirtualMachine.list();
             for (VirtualMachineDescriptor vmd : list) {
