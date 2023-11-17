@@ -43,7 +43,8 @@ public class HelloController {
         System.out.println("Class Loader demo: " + classLoader);
         System.out.println("System Class Loader demo: " + systemClassLoader);
 
-        systemClassLoader.loadClass("com.example.demo.controller.HelloController");
+        Class<?> target = systemClassLoader.loadClass("com.example.demo.controller.HelloController");
+        System.out.println("target class: " + target.getName());
 
         try {
             List<VirtualMachineDescriptor> list = VirtualMachine.list();
