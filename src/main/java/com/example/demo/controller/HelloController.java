@@ -36,7 +36,7 @@ public class HelloController {
     }
 
     @RequestMapping(value = "/attach", method = RequestMethod.GET)
-    public String updateClassMethod() throws ClassNotFoundException {
+    public String updateClassMethod() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
