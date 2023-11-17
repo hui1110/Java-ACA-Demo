@@ -38,6 +38,8 @@ public class HelloController {
     @RequestMapping(value = "/attach", method = RequestMethod.GET)
     public String updateClassMethod() {
 
+        System.out.println("Application SystemClassLoader:" + ClassLoader.getSystemClassLoader());
+        System.out.println("Application ClassLoader:" + HelloController.class.getClassLoader());
         try {
             List<VirtualMachineDescriptor> list = VirtualMachine.list();
             for (VirtualMachineDescriptor vmd : list) {
